@@ -1,22 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 
-<mx:Canvas 
-	xmlns:mx="http://www.adobe.com/2006/mxml"
-	xmlns:s="library://ns.adobe.com/flex/spark"
-	xmlns:controls="com.n7.controls.*"
-	x="10" y="10" width="332" height="245" clipContent="false"
-	creationComplete="initIpodPlayer(event)"
-	styleName="ipodScreenContainer">
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:controls="com.n7.controls.*"
+		   x="10" y="10" width="332" height="245" clipContent="false"
+		   creationComplete="initIpodPlayer(event)" currentState="Vizualize"
+		   styleName="ipodScreenContainer">
 	
 	<mx:Script>
 		<![CDATA[	
 			import com.n7.player.*;
 			
+			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.ListEvent;
 			import mx.events.SliderEvent;
 			
 			import org.osmf.events.TimeEvent;
+			
+			import spark.events.GridEvent;
 			
 			[Embed(source="assets/images/sound.png")]
 			[Bindable]
@@ -28,6 +32,16 @@
 			
 			[Bindable]
 			public var player:Player = Player.getPlayerInstance();
+			
+			[Bindable]
+			public var playlistMangager:PlayerlistManager;
+			
+			[Bindable] 
+			public var playListCollection:ArrayCollection = new ArrayCollection(); 
+			
+			public function transformPlMtoCollection(pl:PlayerlistManager):void { 
+				playListCollection = new ArrayCollection(pl.getTracksInfo());
+			} 
 			
 			[Bindable]
 			private var _scrubbing:Boolean = false;
@@ -42,7 +56,7 @@
 			
 			private function initIpodPlayer(event:Event):void {
 				
-				player.repeat = PlayerRepeat.REPEAT_NONE;	
+				player.repeat = PlayerRepeat.REPEAT_NONE;
 				
 				player.addEventListener(PlayerEvent.PLAYLIST_UPDATED, onTrackLoad);								
 				player.addEventListener(PlayerEvent.PLAYRSTATE_CHANGED, onTrackLoad);				
@@ -64,6 +78,11 @@
 				if (player.playrState == PlayerStates.STOPPED) {
 					positionLabel.text = "0:00";				
 					trackSlider.value = 0;
+				}
+				
+				if (player.playrState == PlayerStates.READY) {
+					transformPlMtoCollection(player.playlist);
+					playlistMangager = player.playlist;
 				}
 			}
 			
@@ -108,7 +127,7 @@
 				trackSlider.removeEventListener(MouseEvent.MOUSE_UP, mouseUpListener);
 				}
 				
-				Alert.show('df');
+				Alert.show('fuuuuuuu');
 				*/
 			}
 			
@@ -133,6 +152,9 @@
 					{	
 						player.stop();
 						player.next()
+							
+						// Bad
+						FlexGlobals.topLevelApplication.selectedTracksIndex = player.playlist.currentTrackNumber - 1;
 					}
 					player.stop();
 					player.play();
@@ -168,14 +190,47 @@
 				muteButton.toolTip = muteButton.selected ? "Sound" : "Mute";
 				muteButton.setStyle("icon", muteButton.selected ? muteIconCls:soundIconCls);
 			}
+			
+			protected function onDataGrindChangedByClick(event:ListEvent):void
+			{
+				var shouldStartPlaying:Boolean = player.playrState == PlayerStates.PLAYING;
+				player.stop();
+				player.playlist.gotoTrack(event.rowIndex + 1);
+				
+				// TODO I should not have to do that
+				songTitle.text = player.title;
+				trackSlider.maximum = player.totalSeconds;
+				lengthLabel.text = player.totalTime;
+				
+				if (shouldStartPlaying) {
+					player.play();
+				}
+			}
+			
 		]]>
 	</mx:Script>
-	
-	
+	<mx:states>
+		<mx:State name="Vizualize" />
+		<mx:State name="Playlist" />
+	</mx:states>
 	<controls:MusicVisualizer id="screenVisualiser" styleName="screenVisualiser"   
 							  width="332" 
 							  height="225"
+							  visible="true"
 							  />
+	
+	<mx:DataGrid
+		selectable="true"
+		selectedIndex="{FlexGlobals.topLevelApplication.selectedTracksIndex}"
+		visible="{FlexGlobals.topLevelApplication.playListVisible}"
+		itemClick="onDataGrindChangedByClick(event)"
+		color="#000000"
+		width="332" 
+		height="225" 
+		id="playlistVisualiser" 
+		sortableColumns="false"
+		dataProvider="{playListCollection}">
+	</mx:DataGrid>
 	
 	<!-- Song Title -->
 	<mx:HBox styleName="songTitle"  

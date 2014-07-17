@@ -10,13 +10,19 @@
 				xmlns:controls1="com.n7.controls.*">
 	
 	<mx:Style source="/assets/css/style.css" />
-	
 	<mx:Script>
 		<![CDATA[
+			import com.n7.player.*;
 			
-			import com.n7.player.*;			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;			
 			
 			private var playList:PlayerlistManager;	
+			
+			[Bindable]
+			public var selectedTracksIndex:Number = 0;
+			[Bindable]
+			public var playListVisible:Boolean = false;
 			
 			private function initPlayer(event:Event):void 
 			{
@@ -84,7 +90,6 @@
 				x="8"
 				top="255"
 				/>
-			
 		</mx:Canvas>
 	</mx:VBox>
 	

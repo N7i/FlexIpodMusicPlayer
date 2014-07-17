@@ -1,6 +1,6 @@
 package com.n7.player{
 	
-	 
+	
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
@@ -220,6 +220,19 @@ package com.n7.player{
 		}
 		public function toArray():Array{
 			return playlist;
+		}
+		
+		public function getTracksInfo():Array {
+			var tracksInfo:Array = new Array();
+			
+			for (var s:Number=0;s<_playlist.length;s++){
+				tracksInfo.push({
+					"Artiste": _playlist[s].artist,
+					"Title": _playlist[s].title,
+					"Album": _playlist[s].album
+				});
+			}
+			return tracksInfo;	
 		}
 	}
 }

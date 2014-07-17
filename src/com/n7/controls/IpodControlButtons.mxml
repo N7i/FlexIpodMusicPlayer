@@ -41,6 +41,7 @@
 			   paddingLeft="10"
 			   paddingRight="10"
 			   paddingTop="10"
+			   click="openCloseMenu(event)"
 			   toolTip="Menu"/>
 	
 	<mx:Button id="repeatButton" x="138" y="95" width="63" height="63" click="toggleRepeat()"
@@ -52,6 +53,7 @@
 		<![CDATA[	
 			import com.n7.player.*;
 			
+			import mx.core.FlexGlobals;
 			import mx.events.SliderEvent;
 			
 			private var player:Player = Player.getPlayerInstance();
@@ -143,6 +145,11 @@
 				player.stop();
 				player.next()
 				player.play();
+				
+				//Bad 
+				FlexGlobals.topLevelApplication.selectedTracksIndex = player.playlist.currentTrackNumber - 1;
+				
+				trace(player.playlist.currentTrackNumber);
 			}
 			
 			public function moveToPrevious(): void 
@@ -162,6 +169,14 @@
 					player.previous()
 					player.play();
 				}
+				
+				// Bad
+				FlexGlobals.topLevelApplication.selectedTracksIndex = player.playlist.currentTrackNumber - 1;
+			}
+			
+			protected function openCloseMenu(event:MouseEvent):void
+			{
+				FlexGlobals.topLevelApplication.playListVisible = !FlexGlobals.topLevelApplication.playListVisible
 			}
 			
 		]]>
