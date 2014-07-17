@@ -6,6 +6,7 @@
 	xmlns:s="library://ns.adobe.com/flex/spark"
 	xmlns:controls="com.n7.controls.*"
 	x="10" y="10" width="332" height="245" clipContent="false"
+	creationComplete="initIpodPlayer(event)"
 	styleName="ipodScreenContainer">
 	
 	<mx:Script>
@@ -14,7 +15,6 @@
 			
 			import mx.controls.Alert;
 			import mx.events.SliderEvent;
-			import mx.utils.ObjectProxy;
 			
 			import org.osmf.events.TimeEvent;
 			
@@ -34,27 +34,6 @@
 			private var _currentPosition:int = -1;
 			private var _timer:Timer;
 			
-			[Bindable]
-			public function get playlist():PlayerlistManager
-			{
-				return player.playlist;
-			}
-			public function set playlist(list:PlayerlistManager):void
-			{
-				if (list != null && list.length > 0)
-				{
-					player.playlist = list;
-				} 
-			}
-			[Bindable]
-			public function get autoPlay():Boolean
-			{
-				return player.autoPlay;
-			}			
-			public function set autoPlay(auto:Boolean):void
-			{
-				player.autoPlay = auto;
-			}
 			
 			public function trackPosition(value:uint):String
 			{
@@ -73,11 +52,6 @@
 				player.addEventListener(PlayerEvent.PLAYR_SCROBBLED, onScrobbled);
 				player.addEventListener(PlayerErrorEvent.SOUND_STREAM_ERROR, onError);
 				
-				if (autoPlay)
-				{
-					// play on load
-					player.play();
-				}
 			}
 			
 			private function onError(event:Event):void 

@@ -17,7 +17,6 @@
 			import com.n7.player.*;			
 			
 			private var playList:PlayerlistManager;	
-			private var player:Player = Player.getPlayerInstance();
 			
 			private function initPlayer(event:Event):void 
 			{
@@ -46,7 +45,7 @@
 						'assets/music/skratch2.mp3', 36) );
 				
 				// load playlist
-				player.playlist = playList;
+				ipodButtonsContainer.playlist = playList;
 			}
 			
 			private function createTrack(artist:String, album:String, 
