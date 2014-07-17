@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application layout="vertical" verticalGap="0" 
+				xmlns:mx="http://www.adobe.com/2006/mxml" 
+				width="100%" height="100%" 
+				color="#FFFFFF" backgroundAlpha="0"  
+				horizontalAlign="center" 
+				verticalAlign="middle" 
+				creationComplete="initPlayer(event);" 
+				viewSourceURL="srcview/index.html" 
+				xmlns:controls1="com.n7.controls.*">
+	
+	<mx:Style source="/assets/css/style.css" />
+	
+	<mx:Script>
+		<![CDATA[
+			
+			import com.n7.player.*;			
+			
+			private var playList:PlayerlistManager;	
+			private var player:Player = Player.getPlayerInstance();
+			
+			private function initPlayer(event:Event):void 
+			{
+				// create a sample playlist			
+				playList = new PlayerlistManager();
+				
+				// add sample tracks
+				playList.addTrack(
+					createTrack('Radiohead','In Rainbows', '15 Step',
+						'assets/music/15_Step.mp3', 228) );
+				
+				playList.addTrack(
+					createTrack('Nas', 'God\'s Son', 'Made You Look',
+						'assets/music/Made_You_Look.mp3', 203) );
+				
+				playList.addTrack(
+					createTrack('General Patton/X-Ecutioners',
+						'General Patton vs. the X-Exutioners',
+						'Counterintelligence- Target=37-47-38N 122-33-17W',
+						'assets/music/skratch1.mp3', 40) );
+				
+				playList.addTrack(					
+					createTrack('General Patton/X-Ecutioners',
+						'General Patton vs. the X-Exutioners',
+						'Improvised Explosive Device 0300 Hrs',
+						'assets/music/skratch2.mp3', 36) );
+				
+				// load playlist
+				player.playlist = playList;
+			}
+			
+			private function createTrack(artist:String, album:String, 
+														title:String, file:String, seconds:uint):PlayerTrack
+			{
+				var track:PlayerTrack = new PlayerTrack();
+				track.artist = artist;
+				track.album = album;
+				track.title = title;
+				track.file = file;
+				track.totalSeconds = seconds;
+				
+				return track;
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<mx:VBox
+		horizontalAlign="center"
+		verticalAlign="middle" >
+		<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="352" height="510"
+				   xmlns:s="library://ns.adobe.com/flex/spark"
+				   clipContent="false"
+				   styleName="ipodContainer"
+				  
+				   >
+			
+			<controls1:IpodControlScreen 
+				id="ipodScreenContainer"
+				
+				/>
+			
+			<controls1:IpodControlButtons 
+				id="ipodButtonsContainer" 
+				x="8"
+				top="255"
+				/>
+			
+		</mx:Canvas>
+	</mx:VBox>
+	
+	
+</mx:Application>

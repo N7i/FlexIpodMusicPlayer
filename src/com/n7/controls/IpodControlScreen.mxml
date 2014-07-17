@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<mx:Canvas 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:controls="com.n7.controls.*"
+	x="10" y="10" width="332" height="245" clipContent="false"
+	styleName="ipodScreenContainer">
+	
+	<mx:Script>
+		<![CDATA[	
+			import com.n7.player.*;
+			
+			import mx.controls.Alert;
+			import mx.events.SliderEvent;
+			import mx.utils.ObjectProxy;
+			
+			import org.osmf.events.TimeEvent;
+			
+			[Embed(source="assets/images/sound.png")]
+			[Bindable]
+			public var soundIconCls:Class;
+			
+			[Embed(source="assets/images/mute.png")]
+			[Bindable]
+			public var muteIconCls:Class;
+			
+			[Bindable]
+			public var player:Player = Player.getPlayerInstance();
+			
+			[Bindable]
+			private var _scrubbing:Boolean = false;
+			private var _currentPosition:int = -1;
+			private var _timer:Timer;
+			
+			[Bindable]
+			public function get playlist():PlayerlistManager
+			{
+				return player.playlist;
+			}
+			public function set playlist(list:PlayerlistManager):void
+			{
+				if (list != null && list.length > 0)
+				{
+					player.playlist = list;
+				} 
+			}
+			[Bindable]
+			public function get autoPlay():Boolean
+			{
+				return player.autoPlay;
+			}			
+			public function set autoPlay(auto:Boolean):void
+			{
+				player.autoPlay = auto;
+			}
+			
+			public function trackPosition(value:uint):String
+			{
+				return player.currentTime;
+			}
+			
+			private function initIpodPlayer(event:Event):void {
+				
+				player.repeat = PlayerRepeat.REPEAT_NONE;	
+				
+				player.addEventListener(PlayerEvent.PLAYLIST_UPDATED, onTrackLoad);								
+				player.addEventListener(PlayerEvent.PLAYRSTATE_CHANGED, onTrackLoad);				
+				player.addEventListener(PlayerEvent.SONGINFO, onTrackLoad);
+				player.addEventListener(PlayerEvent.PLAYRSTATE_CHANGED, onPlayerStateChanged);
+				player.addEventListener(PlayerEvent.TRACK_PROGRESS, updateTrackProgress);
+				player.addEventListener(PlayerEvent.PLAYR_SCROBBLED, onScrobbled);
+				player.addEventListener(PlayerErrorEvent.SOUND_STREAM_ERROR, onError);
+				
+				if (autoPlay)
+				{
+					// play on load
+					player.play();
+				}
+			}
+			
+			private function onError(event:Event):void 
+			{
+				songTitle.text = "An error has occurs during loading song";
+			}
+			
+			private function onPlayerStateChanged(event:PlayerEvent):void
+			{
+				if (player.playrState == PlayerStates.STOPPED) {
+					positionLabel.text = "0:00";				
+					trackSlider.value = 0;
+				}
+			}
+			
+			private function onTrackLoad(event:PlayerEvent = null):void
+			{
+				try
+				{				
+					songTitle.text = player.title;
+					trackSlider.maximum = player.totalSeconds;
+					lengthLabel.text = player.totalTime;
+				}
+				catch(error:Error)
+				{}
+				
+				if (_timer == null)
+				{
+					_timer = new Timer(3000);
+					_timer.addEventListener(TimerEvent.TIMER, updateTitle);
+					_timer.start();
+				}								
+			}
+			
+			private function changeTrackPosition(sliderEvent:SliderEvent):void
+			{
+				/*if (!_scrubbing) {
+				trackSlider.addEventListener(MouseEvent.MOUSE_UP, mouseUpListener);
+				_scrubbing = true;
+				}*/
+				player.scrobbleTo(sliderEvent.value*1000);
+			}
+			
+			private function onScrobbled(event:PlayerEvent):void
+			{
+				positionLabel.text = player.currentTime;
+			}
+			
+			public function mouseUpListener(event:Event):void
+			{
+				
+				/*if (_scrubbing) {
+				_scrubbing = false;
+				trackSlider.removeEventListener(MouseEvent.MOUSE_UP, mouseUpListener);
+				}
+				
+				Alert.show('df');
+				*/
+			}
+			
+			private function updateTrackProgress(event:PlayerEvent):void
+			{
+				if (!_scrubbing) {
+					trackSlider.value = player.currentSeconds;
+				}
+				trackSlider.toolTip = player.currentTime;
+				positionLabel.text = player.currentTime;
+				_currentPosition = player.currentSeconds;					
+				if (_currentPosition >= player.totalSeconds	&&
+					player.playrState == PlayerStates.PLAYING)
+				{
+					if (_scrubbing) 
+					{
+						player.pause();
+						return;
+					}
+					
+					if (player.repeat != PlayerRepeat.REPEAT_SINGLE)
+					{	
+						player.stop();
+						player.next()
+					}
+					player.stop();
+					player.play();
+				}
+				
+			}
+			
+			private function updateTitle(timerEvent:TimerEvent):void
+			{
+				var title:String = player.title;
+				switch(_timer.currentCount % 3)
+				{
+					case 1: 
+						title = player.artist;
+						break;
+					case 2:
+						title = player.album;
+						break;
+				}
+				songTitle.text = title;
+				songTitle.invalidateDisplayList()
+				
+			}	
+			
+			private function updateVolume(event:SliderEvent):void
+			{
+				player.volume = event.value/100;
+			}
+			
+			public function toggleSound():void
+			{				
+				player.volume = muteButton.selected ? 0:(volumeSlider.value/100);
+				muteButton.toolTip = muteButton.selected ? "Sound" : "Mute";
+				muteButton.setStyle("icon", muteButton.selected ? muteIconCls:soundIconCls);
+			}
+		]]>
+	</mx:Script>
+	
+	
+	<controls:MusicVisualizer id="screenVisualiser" styleName="screenVisualiser"   
+							  width="332" 
+							  height="225"
+							  />
+	
+	<!-- Song Title -->
+	<mx:HBox styleName="songTitle"  
+			 width="332"
+			 height="25"
+			 top="185">
+		
+		<mx:Label id="songTitle" 
+				  text="{player.title}"
+				  width="332"
+				  height="20"
+				  paddingTop="3"
+				  paddingBottom="2"
+				  paddingLeft="5"
+				  />
+	</mx:HBox>
+	
+	<!-- Volume slider -->
+	<mx:HSlider id="volumeSlider" 
+				top="185"
+				left="230"
+				change="updateVolume(event);" 
+				width="80" height="25"  
+				liveDragging="true" 
+				dataTipPrecision="0" 
+				tickOffset="10" 
+				dataTipOffset="2"
+				minimum="0" 
+				maximum="100" 
+				value="80" />
+	
+	<!-- Mute button -->
+	<mx:Button id="muteButton" 
+			   click="toggleSound()"
+			   top="190"
+			   left="310"
+			   toggle="true"
+			   width="16" height="16"
+			   icon="@Embed(source='assets/images/sound.png')" 					 
+			   toolTip="Mute"/>
+	
+	<!-- Player track slider -->
+	<mx:HBox width="332" height="35" top="210"
+			 paddingLeft="10" 
+			 paddingRight="10" 
+			 backgroundColor="#ffffff"
+			 paddingTop="5" >
+		
+		<mx:Label id="positionLabel" 
+				  text="0:00"
+				  paddingTop="6"
+				  color="#ABABAB"
+				  />		
+		
+		<mx:HSlider id="trackSlider" width="100%" 
+					allowTrackClick="true" 
+					useHandCursor="true" 
+					buttonMode="true" 
+					liveDragging="false"
+					snapInterval="1" 
+					tickInterval="60" 
+					showTrackHighlight="true"
+					dataTipPlacement="top" 
+					dataTipOffset="2" 
+					dataTipFormatFunction="trackPosition" 
+					minimum="0" 
+					change="changeTrackPosition(event)" 
+					/>
+		
+		<mx:Label id="lengthLabel" 
+				  paddingTop="6"
+				  text="{player.currentTime}"
+				  color="#ABABAB"
+				  />
+		
+		
+	</mx:HBox>
+	
+	
+</mx:Canvas>
+
+

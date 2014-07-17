@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas 
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="332" 
+	height="256"
+	creationComplete="initControlButton(event)">
+	
+	<mx:Image x="55" y="10" width="230" height="230" source="assets/images/buttonContainer.png"/>
+	
+	<mx:Button id="playPauseButton" x="152" y="190" width="36" height="36"
+			   icon="@Embed(source='assets/images/playpause.png')"
+			   paddingBottom="10"
+			   paddingLeft="10"
+			   paddingRight="10"
+			   paddingTop="10"
+			   click="togglePlay()"
+			   toggle="true"
+			   toolTip="Play"/>
+	
+	<mx:Button id="nextButton" x="236" y="107" width="36" height="36"
+			   icon="@Embed(source='assets/images/next.png')" 
+			   paddingBottom="10"
+			   paddingLeft="10"
+			   paddingRight="10"
+			   paddingTop="10"
+			   click="moveToNext()"
+			   toolTip="Next"/>
+	
+	<mx:Button id="previous" x="66" y="107" width="36" height="36"
+			   icon="@Embed(source='assets/images/previous.png')" 
+			   paddingBottom="10"
+			   paddingLeft="10"
+			   paddingRight="10"
+			   paddingTop="10"
+			   click="moveToPrevious()"
+			   toolTip="Previous"/>
+	
+	<mx:Button id="menuButton" x="139" y="29" width="63" height="25"
+			   icon="@Embed(source='assets/images/menu.png')"
+			   paddingBottom="10"
+			   paddingLeft="10"
+			   paddingRight="10"
+			   paddingTop="10"
+			   toolTip="Menu"/>
+	
+	<mx:Button id="repeatButton" x="138" y="95" width="63" height="63" click="toggleRepeat()"
+			   icon="@Embed(source='assets/images/repeat.png')" toggle="true"
+			   toolTip="Turn repeat on"
+			   cornerRadius="30"/>
+	
+	<mx:Script>
+		<![CDATA[	
+			import com.n7.player.*;
+			
+			import mx.events.SliderEvent;
+			
+			private var player:Player = Player.getPlayerInstance();
+			
+			[Bindable]
+			public function get playlist():PlayerlistManager
+			{
+				return player.playlist;
+			}
+			public function set playlist(list:PlayerlistManager):void
+			{
+				if (list != null && list.length > 0)
+				{
+					player.playlist = list;
+				} 
+			}
+			
+			private function initControlButton(event:Event):void {
+				
+				player.repeat = PlayerRepeat.REPEAT_NONE;
+				player.addEventListener(PlayerEvent.PLAYRSTATE_CHANGED, onPlayerStateChanged);
+			}
+			
+			public function onPlayerStateChanged(event:Event): void 
+			{
+				if (player.playrState == PlayerStates.PLAYING)
+				{
+					playPauseButton.selected = true;											
+					playPauseButton.toolTip = "Pause";
+				}
+				else 
+				{
+					playPauseButton.selected = false;											
+					playPauseButton.toolTip = "Play";
+				}
+			}
+			
+			public function toggleRepeat():void
+			{
+				player.repeat = repeatButton.selected ? PlayerRepeat.REPEAT_SINGLE: PlayerRepeat.REPEAT_NONE;
+				repeatButton.toolTip = repeatButton.selected ? "Turn repeat off":"Turn repeat on";
+			}
+			
+			public function togglePlay():void
+			{
+				if (player.playrState != PlayerStates.PLAYING)
+				{
+					play();
+				}
+				else
+				{
+					pause();
+				}
+			}
+			
+			public function play(): void 
+			{
+				if (player.playrState != PlayerStates.PLAYING)
+				{
+					player.play();
+				}
+			}
+			
+			public function pause(): void 
+			{
+				if (player.playrState == PlayerStates.PLAYING) {
+					player.pause();
+				}
+			}
+			
+			public function moveToNext(): void 
+			{
+				player.stop();
+				player.next()
+				player.play();
+			}
+			
+			public function moveToPrevious(): void 
+			{
+				if (player.playrState == PlayerStates.PAUSED)
+				{
+					player.stop();
+				}
+				else if (player.playrState != PlayerStates.PAUSED && 
+					player.playrState != PlayerStates.PLAYING)
+				{
+					player.previous()
+				}
+				else
+				{
+					player.stop();
+					player.previous()
+					player.play();
+				}
+			}
+			
+		]]>
+	</mx:Script>
+</mx:Canvas>

@@ -1,0 +1,31 @@
+.ipodContainer {
+	corner-radius:20px;
+	background-color: #DBDBDB;
+	border-weight:2px;
+	border-color:#000000;
+	border-style:solid;
+	
+}
+
+.ipodScreenContainer {
+	corner-radius:20px;
+	background-color: #000000;
+	border-weight:1px;
+	border-color:#0F0000;
+	border-style:solid;
+}
+
+.screenVisualiser {
+	corner-radius:20px;
+	border-style: solid;
+	border-thickness: 0px;
+}
+
+.cornerRadius {
+	corner-radius:20px;
+}
+
+.songTitle {
+	backgroundAlpha: 0.7;
+	backgroundColor: #000000;
+}

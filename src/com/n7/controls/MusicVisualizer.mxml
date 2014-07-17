@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:ViewStack xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:vis="com.nocreativity.soundCoolness.*"
+	xmlns:wave="org.bytearray.spectrums.*"	
+	width="420" height="300" 
+	creationPolicy="all" 
+	buttonMode="true" useHandCursor="true"
+	toolTip="Change Visualization"
+	initialize="initMusicVis()"
+	click="nextMusicVis();" 
+	resize="nextMusicVis(0);" xmlns:soundVisualizers="com.n7.soundVisualizers.*">			
+			
+	<mx:Script>
+		<![CDATA[
+			import mx.core.IUIComponent;
+									
+			private var _selectedMusicVis:IUIComponent;
+			
+			/**
+			 * Initializes music visualizer.
+			 */
+			private function initMusicVis():void
+			{
+				// set current vis.
+				this.selectedIndex = 0;
+				_selectedMusicVis = smoothSpectrum;
+			}
+			
+			//----------- Public Methods ------------------------
+			
+			/**
+			 * Loads the next music visualizer.
+			 */
+			public function nextMusicVis(index:int = -1):void
+			{				
+				if (index >= 0 && index < this.numChildren - 1)
+				{
+					// select the specivied music vis
+					this.selectedIndex = index;
+				}
+				else if (this.selectedIndex < this.numChildren -1)
+				{
+					// select the next music visualizer					
+					this.selectedIndex++;
+				}
+				else	
+				{
+					// show the first music vis
+					this.selectedIndex = 0;
+				}
+				
+				// determine the next music visualizer
+				var nextVisualizer:IUIComponent;				
+				switch (this.selectedIndex)
+				{
+					case 0:
+						nextVisualizer = smoothSpectrum;
+						break;											
+					case 1:
+						nextVisualizer = visualizr;
+						break;
+					// Note: add a case for the other music visualizers here
+				}
+				
+				if (nextVisualizer != _selectedMusicVis)
+				{
+					// NOTE: make sure rendering is disabled in your music vis.,
+					// when your visualizer is not enabled
+					// to save those preciouse CPU cycles 
+					// and skip all the bitmapdata and 
+					// blur filter changes that nobody will see :)
+					
+					// change selected visualizer					
+					nextVisualizer.enabled = true;
+					_selectedMusicVis.enabled = false;
+					_selectedMusicVis = nextVisualizer;
+				}
+			}
+			
+			/**
+			 * Returns the selected music visualization.
+			 */
+			public function get selectedMusicVis():IUIComponent
+			{
+				return _selectedMusicVis;
+			}			
+						
+		]]>
+	</mx:Script>
+		
+
+	<mx:Box width="100%" height="100%" 
+		clipContent="false"
+		horizontalAlign="center"
+		verticalAlign="middle"
+		>
+		<soundVisualizers:SmoothSpectrum id="smoothSpectrum"
+							 width="100%" height="100%" styleName="cornerRadius" />
+					
+	</mx:Box>
+	
+			
+	<mx:Box width="100%" height="100%"
+		clipContent="false"
+		horizontalAlign="center"
+		verticalAlign="middle" 
+		>	
+		<soundVisualizers:Visualizr id="visualizr" enabled="false"
+							 width="100%" height="100%" styleName="cornerRadius" />	
+	</mx:Box>
+	
+</mx:ViewStack>
